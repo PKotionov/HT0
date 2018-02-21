@@ -1,6 +1,5 @@
 package com.epam.tat.venyamin.HT0.Prj02;
 
-import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
@@ -9,7 +8,6 @@ import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.TagException;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.File;
@@ -31,15 +29,14 @@ public class MP3Parser implements TrackParser {
             parser.parse(input, handler, metadata, parseContext);
             input.close();
             String artist = metadata.get("xmpDM:artist");
-            if(artist.isEmpty()){
+            if (artist.isEmpty()) {
                 return "Unknown artist.";
             } else {
                 return artist;
             }
-        } catch (TikaException | IOException | SAXException e) {
-            System.out.println("Can't read file: " + file.getAbsolutePath());
+        } catch (Exception e) {
+            return "Unknown artist.";
         }
-        return "Unknown artist.";
     }
 
     @Override
@@ -57,10 +54,9 @@ public class MP3Parser implements TrackParser {
                 return "Unknown album.";
             }
             return album;
-        } catch (TikaException | IOException | SAXException e) {
-            System.out.println("Can't read file: " + file.getAbsolutePath());
+        } catch (Exception e) {
+            return "Unknown album.";
         }
-        return "Unknown album.";
     }
 
     @Override
@@ -79,10 +75,9 @@ public class MP3Parser implements TrackParser {
             } else {
                 return title;
             }
-        } catch (TikaException | IOException | SAXException e) {
-            System.out.println("Can't read file: " + file.getAbsolutePath());
+        } catch (Exception e) {
+            return "Unknown title.";
         }
-        return "Unknown title.";
     }
 
     @Override
