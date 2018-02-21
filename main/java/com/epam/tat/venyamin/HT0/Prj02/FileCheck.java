@@ -4,72 +4,80 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 
 public class FileCheck {
     public static void checkOnSameTrack(List<Track> tracks) {
-        System.setProperty("log4j.configurationFile",
-                "src\\com\\epam\\tat\\venyamin\\HT0\\Prj02\\log4j.xml");
-        Logger logger = LogManager.getRootLogger();
         for (int i = 0; i < tracks.size(); i++) {
             for (int j = i + 1; j < tracks.size(); j++) {
-//                System.out.println(tracks.get(j));
-//                System.out.println(tracks.get(i));
-//                System.out.println(new File(tracks.get(i).getLink()).equals(new File(tracks.get(j).getLink())));
-                if (new File(tracks.get(i).getLink()).equals(new File(tracks.get(j).getLink()))) {
-                    logger.info("Information message");
+                String controlSum1 = getCheckSum(new File(tracks.get(i).getLink()));                // получаем контрольные суммы файлов поочереди и сравниваем их
+                String controlSum2 = getCheckSum(new File(tracks.get(j).getLink()));
+                int count = 1;
+                if (controlSum1.equals(controlSum2)) {
 
-                    Logger logger2 = LogManager.getLogger(FileCheck.class);
-                    logger2.info("2 Information message");
-                    logger2.debug("2 Debug message");
-                    logger2.trace("2 Trace message");
-                    logger2.error("2 Error message");
-                    logger2.fatal("2 Fatal message");
-                    logger2.warn("2 Warning message");
+                    //Логирование не осилил, поэтому сделал вывод в консоль:
+                    System.out.println();
+                    System.out.println("Дубликаты " + count + ": ");
+                    System.out.println(tracks.get(i).getLink());
+                    System.out.println(tracks.get(j).getLink());
+                    count++;
                 }
             }
         }
     }
 
     public static void checkOnSameName(List<Track> tracks) {
-        System.setProperty("log4j.configurationFile",
-                "src\\com\\epam\\tat\\venyamin\\HT0\\Prj02\\log4j.xml");
-        Logger logger = LogManager.getRootLogger();
         for (int i = 0; i < tracks.size(); i++) {
             for (int j = i + 1; j < tracks.size(); j++) {
                 if (tracks.get(i).getArtist().equals(tracks.get(j).getArtist()) &&
                         tracks.get(i).getAlbum().equals(tracks.get(j).getAlbum()) &&
                         tracks.get(i).getTitle().equals(tracks.get(j).getTitle())
                         ) {
-                    System.out.println("совпадение обнаружено");
-                    logger.info("Information message");
-                    Logger logger2 = LogManager.getLogger(FileCheck.class);
-                    logger2.info("2 Information message");
-                    logger2.debug("2 Debug message");
-                    logger2.trace("2 Trace message");
-                    logger2.error("2 Error message");
-                    logger2.fatal("2 Fatal message");
-                    logger2.warn("2 Warning message");
+                    System.out.println();
+                    System.out.println("Исполнитель: " + tracks.get(i).getArtist() +
+                            ", Альбом: " + tracks.get(i).getAlbum() +
+                            ", Композиция: " + tracks.get(i).getTitle() + ":");
+                    System.out.println(tracks.get(i).getLink());
+                    System.out.println(tracks.get(j).getLink());
                 }
             }
         }
     }
 
+    private static final String ALGORITHM = "SHA-1";
 
-//        logger.debug("Debug message");
-//        logger.trace("Trace message");
-//        logger.error("Error message");
-//        logger.fatal("Fatal message");
-//        logger.warn("Warning message");
-//        Logger logger2 = LogManager.getLogger(App.class);
-//        logger2.info("2 Information message");
-//        logger2.debug("2 Debug message");
-//        logger2.trace("2 Trace message");
-//        logger2.error("2 Error message");
-//        logger2.fatal("2 Fatal message");
-//        logger2.warn("2 Warning message");
+    public static String getCheckSum(File file) {
 
+        try {
+            // Получаем контрольную сумму для файла в виде массива байт
+            final MessageDigest md = MessageDigest.getInstance(ALGORITHM);
+            final FileInputStream fis = new FileInputStream(file);
+            byte[] dataBytes = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(dataBytes)) > 0) {
+                md.update(dataBytes, 0, bytesRead);
+            }
+            byte[] mdBytes = md.digest();
+
+            // Переводим контрольную сумму в виде массива байт в
+            // шестнадцатеричное представление
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mdBytes.length; i++) {
+                sb.append(Integer.toString((mdBytes[i] & 0xff) + 0x100, 16)
+                        .substring(1));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException | IOException ex) {
+            System.out.println("Контрольная сумма не может быть найдена.");
+        }
+        return "";
+    }
 }
+
 
 
